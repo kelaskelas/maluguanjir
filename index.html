@@ -18,7 +18,6 @@ body {
   align-items: center;
   height: 100vh;
   text-align: center;
-  overflow: hidden;
 }
 
 .container {
@@ -26,7 +25,6 @@ body {
   padding: 20px;
 }
 
-/* Animasi */
 .fadeUp {
   opacity: 0;
   transform: translateY(15px);
@@ -45,10 +43,6 @@ body {
   filter: blur(0);
 }
 
-h1 {
-  font-family: 'Playfair Display', serif;
-}
-
 button {
   padding: 10px 20px;
   border: none;
@@ -56,11 +50,6 @@ button {
   cursor: pointer;
   border-radius: 8px;
   margin: 5px;
-  transition: 0.2s;
-}
-
-button:hover {
-  transform: scale(1.05);
 }
 
 .hidden {
@@ -73,42 +62,35 @@ button:hover {
 
 <div class="container">
 
-  <!-- STEP 1 -->
-  <div id="step1" class="fadeUp show">
-    <h1>Aku mau jujur sebentar…</h1>
-    <button onclick="goStep2()">lanjut</button>
-  </div>
+<div id="step1" class="fadeUp show">
+  <h1>Aku mau jujur sebentar…</h1>
+  <button onclick="goStep2()">lanjut</button>
+</div>
 
-  <!-- STEP 2 -->
-  <div id="step2" class="hidden">
-    <p id="typing"></p>
-    <button onclick="goStep3()">lanjut</button>
-  </div>
+<div id="step2" class="hidden">
+  <p id="typing"></p>
+  <button onclick="goStep3()">lanjut</button>
+</div>
 
-  <!-- STEP 3 -->
-  <div id="step3" class="hidden blur">
-    <h2>Aku suka sama kamu.</h2>
-    <p>Bukan karena hal besar, tapi hal kecil yang kamu lakukan.</p>
+<div id="step3" class="hidden blur">
+  <h2>Aku suka sama kamu.</h2>
+  <p>Bukan karena hal besar, tapi hal kecil yang kamu lakukan.</p>
 
-    <button onclick="jawab('Oke')">Yes</button>
-    <button onclick="jawab('“Aku seneng kamu jujur, tapi gak dulu')">No</button>
-    <button onclick="jawab('makasih ya')">Sorry</button>
-  </div>
+  <button onclick="jawab('Oke')">Yes</button>
+  <button onclick="jawab('aku suka kamu jujur, tapi ga dulu')">No</button>
+  <button onclick="jawab('makasih ya')">Sorry</button>
+</div>
 
 </div>
 
 <!-- AUDIO -->
-<audio id="bgm" loop>
-  <source src="golden hour (piano instrumental).mp3" type="audio/mpeg">
-</audio>
-
+<audio id="bgm" loop src="golden hour (piano instrumental).mp3"></audio>
 <audio id="clickSfx" src="mixkit-select-click-1109.wav"></audio>
 <audio id="whooshSfx" src="mixkit-air-woosh-1489.wav"></audio>
 <audio id="chimeSfx" src="mixkit-correct-answer-tone-2870.wav"></audio>
-<audio id="typeSfx" src="Typewriter Sound Effect.mp3"></audio>
 
 <script>
-// ===== AUDIO CONTROL =====
+// ===== BASIC SFX =====
 function clickSfx(){
   let s = document.getElementById("clickSfx");
   s.volume = 0.35;
@@ -129,7 +111,7 @@ function chimeSfx(){
   s.play();
 }
 
-// BGM fade in
+// ===== BGM =====
 function startBGM(){
   let bgm = document.getElementById("bgm");
   bgm.volume = 0;
@@ -146,22 +128,60 @@ function startBGM(){
   },200);
 }
 
+// ===== WEB AUDIO TYPEWRITER (NO DELAY) =====
+let audioCtx;
+let typeBuffer;
+let lastSoundTime = 0;
+const SOUND_INTERVAL = 80;
+
+async function initAudio(){
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  const res = await fetch("type.mp3"); // ganti sesuai file kamu
+  const buf = await res.arrayBuffer();
+  typeBuffer = await audioCtx.decodeAudioData(buf);
+}
+
+function playTypeSound(char, i){
+  if(!typeBuffer) return;
+
+  const now = performance.now();
+
+  if(char === " " || char === "\n") return;
+  if(i % 2 !== 0) return;
+  if(now - lastSoundTime < SOUND_INTERVAL) return;
+
+  lastSoundTime = now;
+
+  const source = audioCtx.createBufferSource();
+  const gain = audioCtx.createGain();
+
+  source.buffer = typeBuffer;
+  gain.gain.value = 0.08 + Math.random()*0.05;
+
+  source.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  source.start(0);
+}
+
 // ===== TYPEWRITER =====
 const text = "Aku nggak jago ngomong panjang lebar.\nTapi ada hal yang pengen aku sampaikan.";
 let i = 0;
 
 function typeWriter(){
   let el = document.getElementById("typing");
-  let sfx = document.getElementById("typeSfx");
 
   if(i < text.length){
-    el.innerHTML += text.charAt(i);
+    let char = text.charAt(i);
 
-    if(text.charAt(i) !== " "){
-      sfx.volume = 0.12;
-      sfx.currentTime = 0;
-      sfx.play();
+    if(char === "\n"){
+      el.innerHTML += "<br>";
+    } else {
+      el.innerHTML += char;
     }
+
+    playTypeSound(char, i);
 
     i++;
     setTimeout(typeWriter, 35);
@@ -169,14 +189,20 @@ function typeWriter(){
 }
 
 // ===== FLOW =====
-function goStep2(){
+async function goStep2(){
   clickSfx();
+
+  if(!audioCtx){
+    await initAudio();
+  }
+
   startBGM();
 
   document.getElementById("step1").classList.remove("show");
 
   setTimeout(()=>{
     document.getElementById("step1").style.display = "none";
+
     let step2 = document.getElementById("step2");
     step2.classList.remove("hidden");
     step2.classList.add("fadeUp","show");
@@ -211,7 +237,7 @@ function jawab(res){
     chimeSfx();
     alert("makasih 🙂");
 
-    const nomor = "6289522238269"; // GANTI
+    const nomor = "6289522238269"; // ganti
     const url = `https://wa.me/${nomor}?text=${encodeURIComponent("Jawaban: "+res)}`;
 
     setTimeout(()=>{
