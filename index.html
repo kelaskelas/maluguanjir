@@ -2,8 +2,11 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Untuk Kamu</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins&family=Playfair+Display&display=swap" rel="stylesheet">
+
 <style>
 body {
   margin: 0;
@@ -15,10 +18,31 @@ body {
   align-items: center;
   height: 100vh;
   text-align: center;
+  overflow: hidden;
 }
 
 .container {
   max-width: 600px;
+  padding: 20px;
+}
+
+/* Animasi */
+.fadeUp {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: all 0.8s ease;
+}
+
+.blur {
+  opacity: 0;
+  filter: blur(8px);
+  transition: all 1s ease;
+}
+
+.show {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
 }
 
 h1 {
@@ -31,6 +55,12 @@ button {
   background: #e8dede;
   cursor: pointer;
   border-radius: 8px;
+  margin: 5px;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: scale(1.05);
 }
 
 .hidden {
@@ -42,43 +72,153 @@ button {
 <body>
 
 <div class="container">
-  <div id="step1">
+
+  <!-- STEP 1 -->
+  <div id="step1" class="fadeUp show">
     <h1>Aku mau jujur sebentar…</h1>
-    <button onclick="next()">lanjut</button>
+    <button onclick="goStep2()">lanjut</button>
   </div>
 
+  <!-- STEP 2 -->
   <div id="step2" class="hidden">
-    <p>Aku nggak jago ngomong panjang lebar.</p>
-    <p>Tapi ada hal yang pengen aku sampaikan.</p>
-    <button onclick="next2()">lanjut</button>
+    <p id="typing"></p>
+    <button onclick="goStep3()">lanjut</button>
   </div>
 
-  <div id="step3" class="hidden">
+  <!-- STEP 3 -->
+  <div id="step3" class="hidden blur">
     <h2>Aku suka sama kamu.</h2>
     <p>Bukan karena hal besar, tapi hal kecil yang kamu lakukan.</p>
 
-<button onclick="sendWA('Aku seneng kamu jujur 🙂')">yes 🙂</button>
-<button onclick="sendWA('Aku lagi fokus ke diri sendiri dulu')">No ❌</button>
+    <button onclick="jawab('Oke')">Yes</button>
+    <button onclick="jawab('“Aku seneng kamu jujur, tapi gak dulu')">No</button>
+    <button onclick="jawab('makasih ya')">Sorry</button>
+  </div>
+
+</div>
+
+<!-- AUDIO -->
+<audio id="bgm" loop>
+  <source src="golden hour (piano instrumental).mp3" type="audio/mpeg">
+</audio>
+
+<audio id="clickSfx" src="mixkit-select-click-1109.wav"></audio>
+<audio id="whooshSfx" src="mixkit-air-woosh-1489.wav"></audio>
+<audio id="chimeSfx" src="mixkit-correct-answer-tone-2870.wav"></audio>
+<audio id="typeSfx" src="Typewriter Sound Effect.mp3"></audio>
 
 <script>
-function sendWA(response) {
-  const nomor = "628952223269"; // ganti nomor kamu
-  const pesan = `Jawaban dari dia: ${response}`;
-  const url = `https://wa.me/${nomor}?text=${encodeURIComponent(pesan)}`;
-  
-  window.location.href = url;
-}
-</script>
-
-<script>
-function next() {
-  document.getElementById("step1").classList.add("hidden");
-  document.getElementById("step2").classList.remove("hidden");
+// ===== AUDIO CONTROL =====
+function clickSfx(){
+  let s = document.getElementById("clickSfx");
+  s.volume = 0.35;
+  s.currentTime = 0;
+  s.play();
 }
 
-function next2() {
-  document.getElementById("step2").classList.add("hidden");
-  document.getElementById("step3").classList.remove("hidden");
+function whooshSfx(){
+  let s = document.getElementById("whooshSfx");
+  s.volume = 0.25;
+  s.currentTime = 0;
+  s.play();
+}
+
+function chimeSfx(){
+  let s = document.getElementById("chimeSfx");
+  s.volume = 0.3;
+  s.play();
+}
+
+// BGM fade in
+function startBGM(){
+  let bgm = document.getElementById("bgm");
+  bgm.volume = 0;
+  bgm.play();
+
+  let v = 0;
+  let fade = setInterval(()=>{
+    if(v < 0.25){
+      v += 0.02;
+      bgm.volume = v;
+    } else {
+      clearInterval(fade);
+    }
+  },200);
+}
+
+// ===== TYPEWRITER =====
+const text = "Aku nggak jago ngomong panjang lebar.\nTapi ada hal yang pengen aku sampaikan.";
+let i = 0;
+
+function typeWriter(){
+  let el = document.getElementById("typing");
+  let sfx = document.getElementById("typeSfx");
+
+  if(i < text.length){
+    el.innerHTML += text.charAt(i);
+
+    if(text.charAt(i) !== " "){
+      sfx.volume = 0.12;
+      sfx.currentTime = 0;
+      sfx.play();
+    }
+
+    i++;
+    setTimeout(typeWriter, 35);
+  }
+}
+
+// ===== FLOW =====
+function goStep2(){
+  clickSfx();
+  startBGM();
+
+  document.getElementById("step1").classList.remove("show");
+
+  setTimeout(()=>{
+    document.getElementById("step1").style.display = "none";
+    let step2 = document.getElementById("step2");
+    step2.classList.remove("hidden");
+    step2.classList.add("fadeUp","show");
+
+    whooshSfx();
+    typeWriter();
+  },500);
+}
+
+function goStep3(){
+  clickSfx();
+
+  let step2 = document.getElementById("step2");
+  step2.classList.remove("show");
+
+  setTimeout(()=>{
+    step2.style.display = "none";
+
+    let step3 = document.getElementById("step3");
+    step3.classList.remove("hidden");
+    step3.classList.add("show");
+
+    whooshSfx();
+  },500);
+}
+
+// ===== JAWABAN =====
+function jawab(res){
+  clickSfx();
+
+  setTimeout(()=>{
+    chimeSfx();
+    alert("makasih 🙂");
+
+    const nomor = "6289522238269"; // GANTI
+    const url = `https://wa.me/${nomor}?text=${encodeURIComponent("Jawaban: "+res)}`;
+
+    setTimeout(()=>{
+      window.location.href = url;
+    },800);
+
+  },300);
 }
 </script>
 
