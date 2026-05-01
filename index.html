@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Untuk Kamu</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins&family=Playfair+Display&display=swap" rel="stylesheet">
+<style>
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: #f8f8f8;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+}
+
+.container {
+  max-width: 600px;
+}
+
+h1 {
+  font-family: 'Playfair Display', serif;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  background: #e8dede;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.hidden {
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div id="step1">
+    <h1>Aku mau jujur sebentar…</h1>
+    <button onclick="next()">lanjut</button>
+  </div>
+
+  <div id="step2" class="hidden">
+    <p>Aku nggak jago ngomong panjang lebar.</p>
+    <p>Tapi ada hal yang pengen aku sampaikan.</p>
+    <button onclick="next2()">lanjut</button>
+  </div>
+
+  <div id="step3" class="hidden">
+    <h2>Aku suka sama kamu.</h2>
+    <p>Bukan karena hal besar, tapi hal kecil yang kamu lakukan.</p>
+
+<button onclick="sendWA('Aku seneng kamu jujur 🙂')">yes 🙂</button>
+<button onclick="sendWA('Aku lagi fokus ke diri sendiri dulu')">No ❌</button>
+
+<script>
+function sendWA(response) {
+  const nomor = "628952223269"; // ganti nomor kamu
+  const pesan = `Jawaban dari dia: ${response}`;
+  const url = `https://wa.me/${nomor}?text=${encodeURIComponent(pesan)}`;
+  
+  window.location.href = url;
+}
+</script>
+
+<script>
+function next() {
+  document.getElementById("step1").classList.add("hidden");
+  document.getElementById("step2").classList.remove("hidden");
+}
+
+function next2() {
+  document.getElementById("step2").classList.add("hidden");
+  document.getElementById("step3").classList.remove("hidden");
+}
+</script>
+
+</body>
+</html>
